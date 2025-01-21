@@ -1,0 +1,116 @@
+{
+    "name": "abap-tools",
+    "displayName": "ABAP Tools",
+    "description": "SAP ABAP Development Tools for VS Code",
+    "version": "0.0.1",
+    "publisher": "i338631",
+    "engines": {
+        "vscode": "^1.80.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "activationEvents": [
+        "*"
+    ],
+    "main": "./out/extension.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "abap-tools.helloWorld",
+                "title": "Hello ABAP"
+            },
+            {
+                "command": "abap-tools.connectSAP",
+                "title": "ABAP: Connect to SAP System"
+            },
+            {
+                "command": "abap-tools.showConnectionInfo",
+                "title": "ABAP: Show SAP Connection Info"
+            },
+            {
+                "command": "abap-tools.disconnect",
+                "title": "ABAP: Disconnect from SAP"
+            },
+            {
+                "command": "abap-tools.discoverAdt",
+                "title": "ABAP: Discover ADT Services"
+            },
+            {
+                "command": "abap-tools.getObjectStructure",
+                "title": "ABAP: Get Object Structure"
+            },
+            {
+                "command": "abap-tools.statusBarMenu",
+                "title": "ABAP: SAP Connection Menu"
+            }
+        ],
+        "languages": [
+            {
+                "id": "abap",
+                "aliases": [
+                    "ABAP",
+                    "abap"
+                ],
+                "extensions": [
+                    ".abap"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "abap",
+                "scopeName": "source.abap",
+                "path": "./syntaxes/abap.tmLanguage.json"
+            }
+        ],
+        "configuration": {
+            "title": "ABAP Tools",
+            "properties": {
+                "abap-tools.defaultHost": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Default SAP host"
+                },
+                "abap-tools.defaultSystemNumber": {
+                    "type": "string",
+                    "default": "00",
+                    "description": "Default SAP system number"
+                },
+                "abap-tools.defaultClient": {
+                    "type": "string",
+                    "default": "100",
+                    "description": "Default SAP client"
+                },
+                "abap-tools.defaultPort": {
+                    "type": "string",
+                    "default": "8000",
+                    "description": "Default SAP HTTP port for ADT"
+                }
+            }
+        }
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "pretest": "npm run compile",
+        "test": "node ./out/test/runTest.js"
+    },
+    "dependencies": {
+        "node-fetch": "^2.6.9"
+    },
+    "devDependencies": {
+        "@types/chai": "^4.3.4",
+        "@types/glob": "^8.1.0",
+        "@types/mocha": "^10.0.1",
+        "@types/node": "^16.x.x",
+        "@types/node-fetch": "2.6.x",
+        "@types/vscode": "^1.x.x",
+        "@vscode/test-electron": "^2.3.8",
+        "chai": "^4.3.7",
+        "mocha": "^10.2.0",
+        "typescript": "^5.0.0"
+    }
+}

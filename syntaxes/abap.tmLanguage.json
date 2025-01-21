@@ -1,0 +1,28 @@
+{
+    "name": "ABAP",
+    "scopeName": "source.abap",
+    "patterns": [
+        {
+            "match": "\\b(?i:(REPORT|DATA|TYPES|CLASS|METHOD|ENDCLASS|ENDMETHOD|IF|ELSE|ENDIF|LOOP|ENDLOOP|DO|ENDDO|WHILE|ENDWHILE|SELECT|FROM|WHERE|INTO|TABLE|APPEND|MODIFY|DELETE|FORM|ENDFORM|PERFORM|WRITE|CLEAR|REFRESH|SORT))\\b",
+            "name": "keyword.control.abap"
+        },
+        {
+            "begin": "\"",
+            "end": "\"",
+            "name": "string.double.abap"
+        },
+        {
+            "match": "'[^']*'",
+            "name": "string.single.abap"
+        },
+        {
+            "match": "\\*.*$",
+            "name": "comment.line.abap"
+        },
+        {
+            "match": "\\b\\d+\\b",
+            "name": "constant.numeric.abap"
+        }
+    ],
+    "fileTypes": ["abap"]
+} 
