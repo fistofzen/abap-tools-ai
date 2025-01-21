@@ -30,7 +30,10 @@ export class PackageHierarchyProvider implements vscode.TreeDataProvider<Package
     async getChildren(element?: PackageItem): Promise<PackageItem[]> {
         // Check connection status first
         const connectionInfo = this.adtService.getConnectionInfo();
+        console.log('Connection status:', connectionInfo); // Debug connection status
+
         if (!connectionInfo.isConnected) {
+            console.log('Not connected to SAP');
             return [
                 new PackageItem(
                     'Not connected to SAP',
@@ -43,6 +46,7 @@ export class PackageHierarchyProvider implements vscode.TreeDataProvider<Package
             // Root level - show main packages
             try {
                 const packages = await this.adtService.getPackages();
+                console.log('Loaded packages:', packages); // Debug loaded packages
                 return packages.map(pkg => 
                     new PackageItem(
                         pkg.name,
@@ -51,6 +55,7 @@ export class PackageHierarchyProvider implements vscode.TreeDataProvider<Package
                     )
                 );
             } catch (error) {
+                console.error('Failed to load packages:', error);
                 vscode.window.showErrorMessage('Failed to load packages');
                 return [
                     new PackageItem(

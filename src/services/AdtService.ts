@@ -58,7 +58,7 @@ export class AdtService {
         return {
             url: this.baseUrl,
             username: this.username,
-            isConnected: Boolean(this.credentials && this.csrfToken)
+            isConnected: Boolean(this.credentials)  // Only check credentials for now
         };
     }
 
@@ -100,22 +100,32 @@ export class AdtService {
         try {
             const headers: Record<string, string> = {
                 'Authorization': `Basic ${this.credentials}`,
-                'Accept': '*/*'
+                'Accept': '*/*',
+                'Content-Type': 'application/json'
             };
 
-            if (method !== 'GET') {
-                // For non-GET requests, first fetch CSRF token
-                if (!this.csrfToken) {
-                    const tokenResponse = await fetch(`${this.baseUrl}/discovery`, {
-                        method: 'GET',
-                        headers: {
-                            'Authorization': `Basic ${this.credentials}`,
-                            'X-CSRF-Token': 'Fetch'
-                        }
-                    });
-                    this.csrfToken = tokenResponse.headers.get('x-csrf-token') || '';
+            // For non-GET requests or if we don't have a CSRF token yet
+            if (method !== 'GET' || !this.csrfToken) {
+                const tokenResponse = await fetch(`${this.baseUrl}/discovery`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': '*/*',
+                        'Authorization': `Basic ${this.credentials}`,
+                        'X-CSRF-Token': 'Fetch'
+                    }
+                });
+
+                // Get CSRF token and cookie
+                this.csrfToken = tokenResponse.headers.get('x-csrf-token') || '';
+                const cookies = tokenResponse.headers.raw()['set-cookie'];
+                if (cookies && cookies.length > 0) {
+                    // Get the second cookie which should be the SAP client context
+                    headers['Cookie'] = cookies[1] || cookies[0];
                 }
-                headers['X-CSRF-Token'] = this.csrfToken;
+
+                if (method !== 'GET') {
+                    headers['X-CSRF-Token'] = this.csrfToken;
+                }
             }
 
             const response = await fetch(`${this.baseUrl}${path}`, {
@@ -197,11 +207,15 @@ export class AdtService {
     // Add new method for package operations
     async getPackages(parentUri?: string): Promise<AdtPackage[]> {
         try {
-            const path = parentUri ? 
-                `/repository/nodestructure?parent_uri=/sap/bc/adt/packages/${parentUri}` : 
-                '/repository/nodestructure?parent_uri=/sap/bc/adt/packages';
+            if (!this.credentials) {
+                throw new Error('Not connected to SAP');
+            }
 
-            const response = await this.request(path);
+            const path = parentUri ? 
+                `/repository/nodestructure?parent_uri=/sap/bc/adt/repository/informationsystem/mainpackages/${parentUri}` : 
+                '/repository/nodestructure?parent_uri=/sap/bc/adt/repository/informationsystem/mainpackages';
+
+            const response = await this.request(path, 'POST');
             console.log('Package response:', response); // For debugging
 
             // For now return dummy data until we parse XML properly

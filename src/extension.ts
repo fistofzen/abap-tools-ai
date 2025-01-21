@@ -85,6 +85,8 @@ export function activate(context: vscode.ExtensionContext) {
                             const discoveryResult = await adtService.discoverService();
                             statusBarItem.text = "$(check) SAP Connected";
                             vscode.window.showInformationMessage('Successfully connected to SAP system');
+                            // Refresh package view after successful connection
+                            packageHierarchyProvider.refresh();
                         } catch (error) {
                             statusBarItem.text = "$(alert) SAP Disconnected";
                             vscode.window.showErrorMessage(`Failed to connect: ${error}`);
