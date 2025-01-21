@@ -15,6 +15,25 @@
     ],
     "main": "./out/extension.js",
     "contributes": {
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "sap-explorer",
+                    "title": "SAP Explorer",
+                    "icon": "resources/sap.svg"
+                }
+            ]
+        },
+        "views": {
+            "sap-explorer": [
+                {
+                    "id": "sapPackages",
+                    "name": "SAP Packages",
+                    "icon": "resources/package.svg",
+                    "contextualTitle": "SAP Package Hierarchy"
+                }
+            ]
+        },
         "commands": [
             {
                 "command": "abap-tools.helloWorld",
@@ -43,6 +62,11 @@
             {
                 "command": "abap-tools.statusBarMenu",
                 "title": "ABAP: SAP Connection Menu"
+            },
+            {
+                "command": "abap-tools.refreshPackages",
+                "title": "Refresh",
+                "icon": "$(refresh)"
             }
         ],
         "languages": [
@@ -89,6 +113,15 @@
                     "description": "Default SAP HTTP port for ADT"
                 }
             }
+        },
+        "menus": {
+            "view/title": [
+                {
+                    "command": "abap-tools.refreshPackages",
+                    "when": "view == sapPackages",
+                    "group": "navigation"
+                }
+            ]
         }
     },
     "scripts": {

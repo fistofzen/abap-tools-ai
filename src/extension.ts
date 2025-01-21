@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { AdtService } from './services/AdtService';
+import { PackageHierarchyProvider } from './providers/PackageHierarchyProvider';
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('ABAP Tools extension is now active');
@@ -216,11 +217,21 @@ export function activate(context: vscode.ExtensionContext) {
         })
     ];
 
-    // Add everything to subscriptions
+    // Register Package Hierarchy View
+    const packageHierarchyProvider = new PackageHierarchyProvider(adtService);
+    vscode.window.registerTreeDataProvider(
+        'sapPackages',
+        packageHierarchyProvider
+    );
+
+    // Add refresh command
     context.subscriptions.push(
         ...disposables,
         ...providers,
-        statusBarItem
+        statusBarItem,
+        vscode.commands.registerCommand('abap-tools.refreshPackages', () => 
+            packageHierarchyProvider.refresh()
+        )
     );
 }
 

@@ -22,6 +22,14 @@ interface ConnectionInfo {
     isConnected: boolean;
 }
 
+// Add new interface for package structure
+interface AdtPackage {
+    name: string;
+    uri: string;
+    type: string;
+    description?: string;
+}
+
 export class AdtService {
     private baseUrl: string;
     private credentials: string = '';
@@ -92,7 +100,7 @@ export class AdtService {
         try {
             const headers: Record<string, string> = {
                 'Authorization': `Basic ${this.credentials}`,
-                'Accept': '*/*'  // Accept any content type
+                'Accept': '*/*'
             };
 
             if (method !== 'GET') {
@@ -182,6 +190,28 @@ export class AdtService {
             );
         } catch (error) {
             vscode.window.showErrorMessage(`Syntax validation failed: ${error}`);
+            throw error;
+        }
+    }
+
+    // Add new method for package operations
+    async getPackages(parentUri?: string): Promise<AdtPackage[]> {
+        try {
+            const path = parentUri ? 
+                `/repository/nodestructure?parent_uri=/sap/bc/adt/packages/${parentUri}` : 
+                '/repository/nodestructure?parent_uri=/sap/bc/adt/packages';
+
+            const response = await this.request(path);
+            console.log('Package response:', response); // For debugging
+
+            // For now return dummy data until we parse XML properly
+            return [
+                { name: '$TMP', uri: '/sap/bc/adt/packages/$TMP', type: 'DEVC/K' },
+                { name: 'ZLOCAL', uri: '/sap/bc/adt/packages/ZLOCAL', type: 'DEVC/K' },
+                { name: 'ZTEST', uri: '/sap/bc/adt/packages/ZTEST', type: 'DEVC/K' }
+            ];
+        } catch (error) {
+            console.error('Failed to get packages:', error);
             throw error;
         }
     }
