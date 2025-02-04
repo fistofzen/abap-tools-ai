@@ -48,13 +48,6 @@ interface AdtClass {
     description?: string;
 }
 
-interface VirtualFolder {
-    name: string;
-    displayName: string;
-    counter: number;
-    facet: string;
-}
-
 export class AdtService {
     private baseUrl: string;
     private credentials: string = '';
@@ -337,57 +330,111 @@ CLASS ${classDetails.name} IMPLEMENTATION.
 ENDCLASS.`;
     }
 
-    async getRootPackageContents(packageUri: string): Promise<VirtualFolder[]> {
+    async getRootPackageContents(packageUri: string): Promise<AdtClass[]> {
         try {
-            // Extract package name from URI (e.g., /sap/bc/adt/packages/ZPACKAGE -> ZPACKAGE)
-            const packageName = packageUri.split('/').pop() || packageUri;
-
             const path = '/repository/informationsystem/virtualfolders/contents';
             const body = `<vfs:virtualFoldersRequest xmlns:vfs="http://www.sap.com/adt/ris/virtualFolders" objectSearchPattern="*">
-                <vfs:preselection facet="group">
-                    <vfs:value>SOURCE_LIBRARY</vfs:value>
-                </vfs:preselection>
-                <vfs:preselection facet="package">
-                    <vfs:value>..${packageName}</vfs:value>
-                </vfs:preselection>
-                <vfs:facetorder>
-                    <vfs:facet>type</vfs:facet>
-                </vfs:facetorder>
+            <vfs:preselection facet="package">
+            <vfs:value>ZTEST61</vfs:value>
+            </vfs:preselection>
+            <vfs:facetorder>
+            <vfs:facet>package</vfs:facet>
+            <vfs:facet>group</vfs:facet>
+            <vfs:facet>type</vfs:facet>
+            </vfs:facetorder>
             </vfs:virtualFoldersRequest>`;
 
-            const response = await this.request(path, 'POST', body, {
+
+                const body2 = `<vfs:virtualFoldersRequest xmlns:vfs="http://www.sap.com/adt/ris/virtualFolders" objectSearchPattern="*">
+            <vfs:preselection facet="package">
+            <vfs:value>..ZTEST61</vfs:value>
+            </vfs:preselection>
+            <vfs:facetorder>
+            <vfs:facet>group</vfs:facet>
+            <vfs:facet>type</vfs:facet>
+            </vfs:facetorder>
+            </vfs:virtualFoldersRequest>`;
+
+
+                const body3 = `<vfs:virtualFoldersRequest xmlns:vfs="http://www.sap.com/adt/ris/virtualFolders" objectSearchPattern="*">
+            <vfs:preselection facet="group">
+            <vfs:value>SOURCE_LIBRARY</vfs:value>
+            </vfs:preselection>
+            <vfs:preselection facet="package">
+            <vfs:value>..ZTEST61</vfs:value>
+            </vfs:preselection>
+            <vfs:facetorder>
+            <vfs:facet>type</vfs:facet>
+            </vfs:facetorder>
+            </vfs:virtualFoldersRequest>`;
+
+
+               const body4 = `<vfs:virtualFoldersRequest xmlns:vfs="http://www.sap.com/adt/ris/virtualFolders" objectSearchPattern="*">
+            <vfs:preselection facet="group">
+            <vfs:value>SOURCE_LIBRARY</vfs:value>
+            </vfs:preselection>
+            <vfs:preselection facet="package">
+            <vfs:value>..ZTEST61</vfs:value>
+            </vfs:preselection>
+            <vfs:preselection facet="type">
+            <vfs:value>CLAS</vfs:value>
+            </vfs:preselection>
+            <vfs:facetorder></vfs:facetorder>
+            </vfs:virtualFoldersRequest>`;
+
+
+
+            const body5 = `<vfs:virtualFoldersRequest xmlns:vfs="http://www.sap.com/adt/ris/virtualFolders" objectSearchPattern="*">
+            <vfs:preselection facet="group">
+            <vfs:value>SOURCE_LIBRARY</vfs:value>
+            </vfs:preselection>
+            <vfs:preselection facet="package">
+            <vfs:value>..ZTEST61</vfs:value>
+            </vfs:preselection>
+            <vfs:preselection facet="type">
+            <vfs:value>REPO</vfs:value>
+            </vfs:preselection>
+            <vfs:facetorder></vfs:facetorder>
+            </vfs:virtualFoldersRequest>`;
+
+            const response = await this.request(path, 'POST', body3, {
                 'Accept': 'application/vnd.sap.adt.repository.virtualfolders.result.v1+xml',
-                'Content-Type': 'application/vnd.sap.adt.repository.virtualfolders.request.v1+xml',
+               'Content-Type':'application/vnd.sap.adt.repository.virtualfolders.request.v1+xml',
                 'User-Agent': 'vscode-abap-tools',
                 'X-sap-adt-profiling': 'server-time'
             });
 
+            // Parse XML response
             const parser = new Parser({ 
                 explicitArray: false,
                 xmlns: true,
-                tagNameProcessors: [(name) => name.replace(/^vfs:/, '')]
+                tagNameProcessors: [(name) => {
+                    return name.replace(/^vfs:/, '');
+                }]
             });
-            
             const result = await parser.parseStringPromise(response);
-            const folders: VirtualFolder[] = [];
-            
-            const virtualFolders = result?.['virtualFoldersResult']?.['virtualFolder'] || [];
-            const folderArray = Array.isArray(virtualFolders) ? virtualFolders : [virtualFolders];
 
-            folderArray.forEach(folder => {
-                if (folder.$ && folder.$.name) {
-                    folders.push({
-                        name:  folder.$.name.value,
-                        displayName: folder.$.displayName.value,
-                        counter: parseInt(folder.$.counter.value, 10),
-                        facet: folder.$.facet.value
+            const classes: AdtClass[] = [];
+            const objects = result?.['virtualFoldersResult']?.['virtualFolder'] || [];  
+            const objectArray = Array.isArray(objects) ? objects : [objects];
+
+            objectArray.forEach(obj => {
+                if (obj.$ && obj.$.uri && obj.$.name) {
+                    classes.push({
+                        name: obj.$.name,
+                        uri: obj.$.uri,
+                        type: obj.$.type || 'CLAS/OC',
+                        description: obj.$.description
                     });
                 }
             });
 
-            return folders;
+
+            
+            console.log('Parsed classes:', classes); // Debug output
+            return classes;
         } catch (error) {
-            console.error('Failed to get virtual folders:', error);
+            console.error('Failed to get classes:', error);
             throw error;
         }
     }

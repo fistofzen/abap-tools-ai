@@ -67,6 +67,11 @@
                 "command": "abap-tools.refreshPackages",
                 "title": "Refresh",
                 "icon": "$(refresh)"
+            },
+            {
+                "command": "abap-tools.createClass",
+                "title": "Create ABAP Class",
+                "icon": "$(add)"
             }
         ],
         "languages": [
@@ -121,6 +126,13 @@
                     "when": "view == sapPackages",
                     "group": "navigation"
                 }
+            ],
+            "view/item/context": [
+                {
+                    "command": "abap-tools.createClass",
+                    "when": "view == sapPackages",
+                    "group": "1_modification"
+                }
             ]
         }
     },
@@ -132,7 +144,9 @@
         "test": "node ./out/test/runTest.js"
     },
     "dependencies": {
-        "node-fetch": "^2.6.9"
+        "@types/xml2js": "^0.4.14",
+        "node-fetch": "^2.6.9",
+        "xml2js": "^0.6.2"
     },
     "devDependencies": {
         "@types/chai": "^4.3.4",

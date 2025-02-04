@@ -5,31 +5,28 @@ import { AdtService } from '../../services/AdtService';
 suite('ADT Service Test Suite', () => {
     let adtService: AdtService;
 
-    suiteSetup(async function() {
-        this.timeout(10000);
-        
-        try {
-            // Set test configuration
-            const config = vscode.workspace.getConfiguration('abap-tools');
-            await config.update('defaultHost', 'test.sap.server', vscode.ConfigurationTarget.Global);
-            await config.update('defaultPort', '44300', vscode.ConfigurationTarget.Global);
+    setup(() => {
+        // Create ADT service in test mode
+        adtService = new AdtService(true);
+    });
 
-            // Wait for extension activation
-            await vscode.commands.executeCommand('workbench.action.reloadWindow');
-            await new Promise(resolve => setTimeout(resolve, 1000));
+    test('Connection configuration test', () => {
+        const connectionInfo = adtService.getConnectionInfo();
+        assert.strictEqual(connectionInfo.url, 'http://test.sap.server:44300/sap/bc/adt');
+        assert.strictEqual(connectionInfo.isConnected, false);
+    });
 
-            // Verify commands are registered
-            const commands = await vscode.commands.getCommands(true);
-            const abapCommands = commands.filter(cmd => cmd.startsWith('abap-tools'));
-            console.log('Available ABAP commands:', abapCommands);
-        } catch (error) {
-            console.error('Setup failed:', error);
-            throw error;
-        }
+    test('Connection command exists', async () => {
+        const commands = await vscode.commands.getCommands();
+        assert.ok(commands.includes('abap-tools.connectSAP'));
+    });
+
+    test('Can create ADT service instance', () => {
+        assert.ok(adtService instanceof AdtService);
     });
 
     test('ADT commands are registered', async () => {
-        const commands = await vscode.commands.getCommands(true);
+        const commands = await vscode.commands.getCommands();
         const abapCommands = commands.filter(cmd => cmd.startsWith('abap-tools'));
         
         // Check for specific commands
@@ -42,12 +39,7 @@ suite('ADT Service Test Suite', () => {
         ];
 
         for (const cmd of requiredCommands) {
-            assert.ok(abapCommands.includes(cmd), `Command ${cmd} not found in available commands: ${abapCommands.join(', ')}`);
+            assert.ok(abapCommands.includes(cmd), `Command ${cmd} not found`);
         }
-    });
-
-    test('Can create ADT service instance', () => {
-        adtService = new AdtService();
-        assert.ok(adtService instanceof AdtService);
     });
 }); 
