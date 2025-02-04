@@ -402,17 +402,30 @@ vituri =
 Object
 */
 
+
+///sap/bc/adt/programs/programs/z19
+//application/vnd.sap.adt.programs.programs.v3+xml, application/vnd.sap.adt.programs.programs.v2+xml, application/vnd.sap.adt.programs.programs+xml
+
+
+///sap/bc/adt/programs/programs/z19/source/main
+//text/plain
+
+
+
+
+
+
             objectArray.forEach(obj => {
                 if (obj.$ && obj.$.uri && obj.$.name) {
+                    const isExpandable = obj.$.expandable?.value === 'true';
                     items.push({
-                        name:  obj?.$.name?.value,
-                        displayName: obj?.$.displayName?.value,
-                        counter: parseInt(obj?.$.counter?.value, 10),
-                        facet: obj?.$.facet?.value,
-                        type: obj?.$.type?.value,
-                        vituri: obj?.$.vituri?.value,
-                        isExpandable: obj?.$.expandable?.value,
-
+                        name: obj.$.name.value,
+                        displayName: obj.$.displayName?.value || obj.$.name.value,
+                        counter: parseInt(obj.$.counter?.value || '0', 10),
+                        facet: obj.$.facet?.value || facetValue,
+                        type: obj.$.type?.value,
+                        vituri: obj.$.vituri?.value,
+                        isExpandable: isExpandable
                     });
                 }
             });
@@ -471,6 +484,7 @@ Object
                         facet: folder.$.name.value,
                         type: folder?.$.type?.value,
                         vituri: folder?.$.vituri?.value,
+                        isExpandable: folder?.$.expandable?.value === 'true'
                     });
                 }
             });
@@ -478,6 +492,36 @@ Object
             return folders;
         } catch (error) {
             console.error('Failed to get virtual folders:', error);
+            throw error;
+        }
+    }
+
+    async getProgramSource(programName: string): Promise<string> {
+        try {
+            const path = `/programs/programs/${programName}/source/main`;
+            const response = await this.request(path, 'GET', undefined, {
+                'Accept': 'text/plain',
+                'Content-Type': 'text/plain'
+            });
+
+            return response;
+        } catch (error) {
+            console.error('Failed to get program source:', error);
+            throw error;
+        }
+    }
+
+    async getClassSource(className: string): Promise<string> {
+        try {
+            const path = `/oo/classes/${className}/source/main`;
+            const response = await this.request(path, 'GET', undefined, {
+                'Accept': 'text/plain',
+                'Content-Type': 'text/plain'
+            });
+
+            return response;
+        } catch (error) {
+            console.error('Failed to get class source:', error);
             throw error;
         }
     }

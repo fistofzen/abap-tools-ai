@@ -56,6 +56,31 @@ export class PackageHierarchyProvider implements vscode.TreeDataProvider<Package
                 }
             }
         });
+
+        // Add double-click handler for both programs and classes
+        vscode.commands.registerCommand('abap-tools.openSource', async (item: PackageItem) => {
+            if (item.type === 'virtualFolder') {
+                try {
+                    let source: string;
+                    if (item.facet === 'REPO') {
+                        source = await this.adtService.getProgramSource(item.label);
+                    } else if (item.facet === 'CLAS') {
+                        source = await this.adtService.getClassSource(item.label);
+                    } else {
+                        return;
+                    }
+                    
+                    // Create and show document
+                    const document = await vscode.workspace.openTextDocument({
+                        content: source,
+                        language: 'abap'
+                    });
+                    await vscode.window.showTextDocument(document);
+                } catch (error) {
+                    vscode.window.showErrorMessage(`Failed to open source: ${error}`);
+                }
+            }
+        });
     }
 
     refresh(): void {
@@ -63,7 +88,15 @@ export class PackageHierarchyProvider implements vscode.TreeDataProvider<Package
     }
 
     getTreeItem(element: PackageItem): vscode.TreeItem {
-        return element;
+        const treeItem = element;
+        if (element.type === 'virtualFolder' && (element.facet === 'REPO' || element.facet === 'CLAS')) {
+            treeItem.command = {
+                command: 'abap-tools.openSource',
+                title: 'Open Source',
+                arguments: [element]
+            };
+        }
+        return treeItem;
     }
 
     async getChildren(element?: PackageItem): Promise<PackageItem[]> {
@@ -100,17 +133,15 @@ export class PackageHierarchyProvider implements vscode.TreeDataProvider<Package
                     )
                 );
             } else if (element.type === 'virtualFolder') {
-                // Get virtual folders for the package
                 const virtualFolders = await this.adtService.getVirtualFolderContents(element.packageUri!, element.facet!);
                 
-                // Map virtual folders to tree items
                 return virtualFolders.map(folder => 
                     new PackageItem(
                         folder.name,
-                        vscode.TreeItemCollapsibleState.Collapsed,
+                        folder.isExpandable ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None,
                         element.packageUri,
                         'virtualFolder',
-                        folder.counter, 
+                        folder.counter,
                         folder.facet
                     )
                 );

@@ -72,6 +72,10 @@
                 "command": "abap-tools.createClass",
                 "title": "Create ABAP Class",
                 "icon": "$(add)"
+            },
+            {
+                "command": "abap-tools.openSource",
+                "title": "Open ABAP Source"
             }
         ],
         "languages": [
