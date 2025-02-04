@@ -14,12 +14,41 @@ export class PackageItem extends vscode.TreeItem {
         super(label, collapsibleState);
         this.tooltip = this.label;
         
+        // Set different icons based on type and facet
         switch (type) {
             case 'package':
                 this.iconPath = new vscode.ThemeIcon('package');
                 break;
             case 'virtualFolder':
-                this.iconPath = new vscode.ThemeIcon('folder');
+                switch (facet) {
+                    case 'CLAS':
+                        this.iconPath = new vscode.ThemeIcon('symbol-class');
+                        break;
+                    case 'PROG':
+                    case 'REPO':
+                        this.iconPath = new vscode.ThemeIcon('file-code');
+                        break;
+                    case 'INTF':
+                        this.iconPath = new vscode.ThemeIcon('symbol-interface');
+                        break;
+                    case 'FUGR':
+                        this.iconPath = new vscode.ThemeIcon('symbol-method');
+                        break;
+                    case 'TABL':
+                        this.iconPath = new vscode.ThemeIcon('database');
+                        break;
+                    case 'TTYP':
+                        this.iconPath = new vscode.ThemeIcon('symbol-enum');
+                        break;
+                    case 'DTEL':
+                        this.iconPath = new vscode.ThemeIcon('symbol-field');
+                        break;
+                    case 'DOMA':
+                        this.iconPath = new vscode.ThemeIcon('symbol-ruler');
+                        break;
+                    default:
+                        this.iconPath = new vscode.ThemeIcon('folder');
+                }
                 this.description = counter ? `(${counter})` : undefined;
                 break;
             case 'class':
@@ -76,6 +105,7 @@ export class PackageHierarchyProvider implements vscode.TreeDataProvider<Package
                         language: 'abap'
                     });
                     await vscode.window.showTextDocument(document);
+                    await vscode.commands.executeCommand('editor.action.formatDocument');
                 } catch (error) {
                     vscode.window.showErrorMessage(`Failed to open source: ${error}`);
                 }
@@ -114,10 +144,12 @@ export class PackageHierarchyProvider implements vscode.TreeDataProvider<Package
                         pkg.name,
                         vscode.TreeItemCollapsibleState.Collapsed,
                         pkg.uri,
+                        'package',
+                        0,
                         'package'
                     )
                 );
-            } else if (element.type === 'package') {
+            } else if (element.facet === 'package' || element.facet === 'PACKAGE') {
                 // Get virtual folders for the package
                 const virtualFolders = await this.adtService.getRootPackageContents(element.packageUri!);
                 
@@ -132,7 +164,7 @@ export class PackageHierarchyProvider implements vscode.TreeDataProvider<Package
                         folder.facet
                     )
                 );
-            } else if (element.type === 'virtualFolder') {
+            } else if (element.facet === 'virtualFolder' || element.facet === 'VIRTUALFOLDER') {
                 const virtualFolders = await this.adtService.getVirtualFolderContents(element.packageUri!, element.facet!);
                 
                 return virtualFolders.map(folder => 

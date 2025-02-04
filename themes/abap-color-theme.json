@@ -1,0 +1,129 @@
+{
+    "name": "ABAP Theme",
+    "colors": {
+        "editor.background": "#1E1E1E",
+        "editor.foreground": "#E0E0E0"
+    },
+    "tokenColors": [
+        {
+            "scope": "keyword.control.abap",
+            "settings": {
+                "foreground": "#FF92D0",
+                "fontStyle": "bold"
+            }
+        },
+        {
+            "scope": "keyword.control.flow.abap",
+            "settings": {
+                "foreground": "#82AAFF",
+                "fontStyle": "bold"
+            }
+        },
+        {
+            "scope": "keyword.control.class.abap",
+            "settings": {
+                "foreground": "#C792EA",
+                "fontStyle": "bold"
+            }
+        },
+        {
+            "scope": "keyword.control.sql.abap",
+            "settings": {
+                "foreground": "#89DDFF",
+                "fontStyle": "bold italic"
+            }
+        },
+        {
+            "scope": "keyword.other.abap",
+            "settings": {
+                "foreground": "#F07178"
+            }
+        },
+        {
+            "scope": "keyword.other.unit.abap",
+            "settings": {
+                "foreground": "#FFB86C"
+            }
+        },
+        {
+            "scope": "keyword.other.special.abap",
+            "settings": {
+                "foreground": "#FF9CAC",
+                "fontStyle": "italic"
+            }
+        },
+        {
+            "scope": "storage.type.abap",
+            "settings": {
+                "foreground": "#FFCB6B",
+                "fontStyle": "italic"
+            }
+        },
+        {
+            "scope": "storage.type.builtin.abap",
+            "settings": {
+                "foreground": "#B2CCD6",
+                "fontStyle": "italic"
+            }
+        },
+        {
+            "scope": "string.quoted.single.abap",
+            "settings": {
+                "foreground": "#C3E88D"
+            }
+        },
+        {
+            "scope": "string.quoted.backtick.abap",
+            "settings": {
+                "foreground": "#C3E88D",
+                "fontStyle": "italic"
+            }
+        },
+        {
+            "scope": "string.quoted.other.abap",
+            "settings": {
+                "foreground": "#A8FF60"
+            }
+        },
+        {
+            "scope": "constant.numeric.abap",
+            "settings": {
+                "foreground": "#F78C6C"
+            }
+        },
+        {
+            "scope": "constant.language.abap",
+            "settings": {
+                "foreground": "#FF9CAC",
+                "fontStyle": "bold"
+            }
+        },
+        {
+            "scope": ["comment.line.asterisk.abap", "comment.line.quote.abap"],
+            "settings": {
+                "foreground": "#546E7A",
+                "fontStyle": "italic"
+            }
+        },
+        {
+            "scope": "keyword.operator.abap",
+            "settings": {
+                "foreground": "#89DDFF",
+                "fontStyle": "bold"
+            }
+        },
+        {
+            "scope": "entity.name.function.abap",
+            "settings": {
+                "foreground": "#82AAFF",
+                "fontStyle": "bold"
+            }
+        },
+        {
+            "scope": "variable.other.abap",
+            "settings": {
+                "foreground": "#EEFFFF"
+            }
+        }
+    ]
+} 
