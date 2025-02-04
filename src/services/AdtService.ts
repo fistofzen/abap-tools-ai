@@ -53,6 +53,9 @@ interface VirtualFolder {
     displayName: string;
     counter: number;
     facet: string;
+    type: string;
+    vituri: string;
+    isExpandable: boolean;
 }
 
 export class AdtService {
@@ -337,6 +340,91 @@ CLASS ${classDetails.name} IMPLEMENTATION.
 ENDCLASS.`;
     }
 
+
+    async getVirtualFolderContents(packageUri: string, facetValue: string): Promise<VirtualFolder[]> {
+        try {
+            const packageName = packageUri.split('/').pop() || packageUri;
+            
+            const path = '/repository/informationsystem/virtualfolders/contents';
+            const body = `<vfs:virtualFoldersRequest xmlns:vfs="http://www.sap.com/adt/ris/virtualFolders" objectSearchPattern="*">
+                <vfs:preselection facet="group">
+                    <vfs:value>SOURCE_LIBRARY</vfs:value>
+                </vfs:preselection>
+                <vfs:preselection facet="package">
+                    <vfs:value>..${packageName}</vfs:value>
+                </vfs:preselection>
+                <vfs:preselection facet="type">
+                    <vfs:value>${facetValue}</vfs:value>
+                </vfs:preselection>
+                <vfs:facetorder></vfs:facetorder>
+            </vfs:virtualFoldersRequest>`;
+    
+
+     
+
+            const response = await this.request(path, 'POST', body, {
+                'Accept': 'application/vnd.sap.adt.repository.virtualfolders.result.v1+xml',
+                'Content-Type': 'application/vnd.sap.adt.repository.virtualfolders.request.v1+xml',
+                'User-Agent': 'vscode-abap-tools',
+                'X-sap-adt-profiling': 'server-time'
+            });
+    
+            // Parse response and return items
+            const parser = new Parser({ 
+                explicitArray: false,
+                xmlns: true,
+                tagNameProcessors: [(name) => name.replace(/^vfs:/, '')]
+            });
+    
+            const result = await parser.parseStringPromise(response);
+            const items: VirtualFolder[] = [];
+            
+            const objects = result?.['virtualFoldersResult']?.['object'] || [];
+            const objectArray = Array.isArray(objects) ? objects : [objects];
+    
+    
+/*
+expandable =
+{name: 'expandable', value: 'true', prefix: '', local: 'expandable', uri: ''}
+name =
+{name: 'name', value: 'Z19', prefix: '', local: 'name', uri: ''}
+package =
+{name: 'package', value: 'ZTEST61', prefix: '', local: 'package', uri: ''}
+text =
+{name: 'text', value: 'w', prefix: '', local: 'text', uri: ''}
+type =
+{name: 'type', value: 'PROG/P', prefix: '', local: 'type', uri: ''}
+uri =
+{name: 'uri', value: '/sap/bc/adt/programs/programs/z19', prefix: '', local: 'uri', uri: ''}
+vituri =
+{name: 'vituri', value: '/sap/bc/adt/vit/wb/object_type/progp/object_name/Z19', prefix: '', local: 'vituri', uri: ''}
+[[Prototype]] =
+Object
+*/
+
+            objectArray.forEach(obj => {
+                if (obj.$ && obj.$.uri && obj.$.name) {
+                    items.push({
+                        name:  obj?.$.name?.value,
+                        displayName: obj?.$.displayName?.value,
+                        counter: parseInt(obj?.$.counter?.value, 10),
+                        facet: obj?.$.facet?.value,
+                        type: obj?.$.type?.value,
+                        vituri: obj?.$.vituri?.value,
+                        isExpandable: obj?.$.expandable?.value,
+
+                    });
+                }
+            });
+
+            return items;
+        } catch (error) {
+            console.error(`Failed to get ${facetValue} items:`, error);
+            throw error;
+        }
+    }
+
+
     async getRootPackageContents(packageUri: string): Promise<VirtualFolder[]> {
         try {
             // Extract package name from URI (e.g., /sap/bc/adt/packages/ZPACKAGE -> ZPACKAGE)
@@ -377,14 +465,16 @@ ENDCLASS.`;
             folderArray.forEach(folder => {
                 if (folder.$ && folder.$.name) {
                     folders.push({
-                        name:  folder.$.name.value,
+                        name:  folder.$.displayName.value,
                         displayName: folder.$.displayName.value,
                         counter: parseInt(folder.$.counter.value, 10),
-                        facet: folder.$.facet.value
+                        facet: folder.$.name.value,
+                        type: folder?.$.type?.value,
+                        vituri: folder?.$.vituri?.value,
                     });
                 }
             });
-
+           
             return folders;
         } catch (error) {
             console.error('Failed to get virtual folders:', error);

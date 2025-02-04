@@ -8,7 +8,8 @@ export class PackageItem extends vscode.TreeItem {
         public readonly collapsibleState: vscode.TreeItemCollapsibleState,
         public readonly packageUri?: string,
         public readonly type: 'package' | 'virtualFolder' | 'class' = 'package',
-        public readonly counter?: number
+        public readonly counter?: number,
+        public readonly facet?: string
     ) {
         super(label, collapsibleState);
         this.tooltip = this.label;
@@ -94,7 +95,23 @@ export class PackageHierarchyProvider implements vscode.TreeDataProvider<Package
                         vscode.TreeItemCollapsibleState.Collapsed,
                         element.packageUri,
                         'virtualFolder',
-                        folder.counter
+                        folder.counter,
+                        folder.facet
+                    )
+                );
+            } else if (element.type === 'virtualFolder') {
+                // Get virtual folders for the package
+                const virtualFolders = await this.adtService.getVirtualFolderContents(element.packageUri!, element.facet!);
+                
+                // Map virtual folders to tree items
+                return virtualFolders.map(folder => 
+                    new PackageItem(
+                        folder.name,
+                        vscode.TreeItemCollapsibleState.Collapsed,
+                        element.packageUri,
+                        'virtualFolder',
+                        folder.counter, 
+                        folder.facet
                     )
                 );
             }
