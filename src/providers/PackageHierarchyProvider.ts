@@ -9,7 +9,9 @@ export class PackageItem extends vscode.TreeItem {
         public readonly packageUri?: string,
         public readonly type: 'package' | 'virtualFolder' | 'class' = 'package',
         public readonly counter?: number,
-        public readonly facet?: string
+        public readonly facet?: string,
+        public readonly whatisclicked?: string,
+        public readonly hasChildrenOfSameFacet?: string
     ) {
         super(label, collapsibleState);
         this.tooltip = this.label;
@@ -134,7 +136,7 @@ export class PackageHierarchyProvider implements vscode.TreeDataProvider<Package
         if (!connectionInfo.isConnected) {
             return [new PackageItem('Not connected to SAP', vscode.TreeItemCollapsibleState.None)];
         }
-
+    
         try {
             if (!element) {
                 // Root level - show main packages
@@ -146,14 +148,76 @@ export class PackageHierarchyProvider implements vscode.TreeDataProvider<Package
                         pkg.uri,
                         'package',
                         0,
-                        'package'
+                        'package',
+                        "package", 
+                        "true"
                     )
                 );
-            } else if (element.facet === 'package' || element.facet === 'PACKAGE') {
+            } else if (element.type === 'package') {
                 // Get virtual folders for the package
-                const virtualFolders = await this.adtService.getRootPackageContents(element.packageUri!);
+                const virtualFolders = await this.adtService.getVirtualFolderContents(
+                    element.packageUri!,
+                    'package',
+                    element.label,
+                    "SOURCE_LIBRARY"
+                );
+
+
+                console.log("Virtual folders:", virtualFolders);
                 
-                // Map virtual folders to tree items
+                // Process virtual folders
+                const processedFolders: PackageItem[] = [];
+                for (const folder of virtualFolders) {
+                    // If it's a package folder starting with "..", make another call
+                    if (folder.facet === 'PACKAGE' && folder.name.startsWith('..')) {
+                        const actualPackageName = folder.name.substring(2); // Remove ".." prefix
+                        const subFolders = await this.adtService.getVirtualFolderContents(
+                            element.packageUri!,
+                            'PACKAGE',
+                            actualPackageName,
+                            "SOURCE_LIBRARY"
+                        );
+                        
+                        processedFolders.push(...subFolders.map(subfolder => 
+                            new PackageItem(
+                                subfolder.name,
+                                vscode.TreeItemCollapsibleState.Collapsed,
+                                element.packageUri,
+                                'virtualFolder',
+                                subfolder.counter,
+                                subfolder.facet,
+                                subfolder.whatisclicked,
+                                subfolder.hasChildrenOfSameFacet
+                            )
+                        ));
+                    } else {
+                        processedFolders.push(
+                            new PackageItem(
+                                folder.name,
+                                vscode.TreeItemCollapsibleState.Collapsed,
+                                element.packageUri,
+                                'virtualFolder',
+                                folder.counter,
+                                folder.facet,
+                                folder.whatisclicked,
+                                folder.hasChildrenOfSameFacet
+                            )
+                        );
+                    }
+                }
+                return processedFolders;
+            } else {
+                // Handle other virtual folders
+
+               
+
+                const virtualFolders = await this.adtService.getVirtualFolderContents(
+                    element.packageUri!,
+                    element.facet!,
+                    element.label,
+                    element.label
+                );
+
                 return virtualFolders.map(folder => 
                     new PackageItem(
                         folder.name,
@@ -161,20 +225,9 @@ export class PackageHierarchyProvider implements vscode.TreeDataProvider<Package
                         element.packageUri,
                         'virtualFolder',
                         folder.counter,
-                        folder.facet
-                    )
-                );
-            } else if (element.facet === 'virtualFolder' || element.facet === 'VIRTUALFOLDER') {
-                const virtualFolders = await this.adtService.getVirtualFolderContents(element.packageUri!, element.facet!);
-                
-                return virtualFolders.map(folder => 
-                    new PackageItem(
-                        folder.name,
-                        folder.isExpandable ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None,
-                        element.packageUri,
-                        'virtualFolder',
-                        folder.counter,
-                        folder.facet
+                        folder.facet,
+                        folder.whatisclicked,
+                        folder.hasChildrenOfSameFacet
                     )
                 );
             }

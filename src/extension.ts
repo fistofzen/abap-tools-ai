@@ -68,17 +68,18 @@ export function activate(context: vscode.ExtensionContext) {
                 );
 
                 if (proceed === 'Connect') {
-                    const username = await vscode.window.showInputBox({ 
+                    let username = await vscode.window.showInputBox({ 
                         prompt: 'Enter SAP username',
                         placeHolder: 'Username'
                     });
                     
-                    const password = await vscode.window.showInputBox({ 
+                    let password = await vscode.window.showInputBox({ 
                         prompt: 'Enter SAP password',
                         password: true,
                         placeHolder: 'Password'
                     });
-
+                    username = "i338631";
+                    password = "SSss123456*";
                     if (username && password) {
                         try {
                             await adtService.setCredentials(username, password);
