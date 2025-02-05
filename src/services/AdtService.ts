@@ -390,7 +390,7 @@ ENDCLASS.`;
         name: string,
         groupName: string,
         parentName: string
-
+        
     ): Promise<VirtualFolder[]> {
         // Extract package name from URI by removing any path segments
         const packageNameParts = packageName.split("/");
@@ -436,13 +436,13 @@ ENDCLASS.`;
             }else if (facetValue === "TYPE") {
                 body = `<vfs:virtualFoldersRequest xmlns:vfs="http://www.sap.com/adt/ris/virtualFolders" objectSearchPattern="*">
                     <vfs:preselection facet="group">
-                    <vfs:value>SOURCE_LIBRARY</vfs:value>
+                    <vfs:value>${parentName}</vfs:value>
                     </vfs:preselection>
                     <vfs:preselection facet="package">
                     <vfs:value>..${actualPackageName}</vfs:value>
                     </vfs:preselection>
                     <vfs:preselection facet="type">
-                    <vfs:value>${parentName}</vfs:value>
+                    <vfs:value>${name}</vfs:value>
                     </vfs:preselection>
                     <vfs:facetorder></vfs:facetorder>
                     </vfs:virtualFoldersRequest>
