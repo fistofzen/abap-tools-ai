@@ -11,7 +11,8 @@ export class PackageItem extends vscode.TreeItem {
         public readonly counter?: number,
         public readonly facet?: string,
         public readonly whatisclicked?: string,
-        public readonly hasChildrenOfSameFacet?: string
+        public readonly hasChildrenOfSameFacet?: string,
+        public readonly parent?: PackageItem
     ) {
         super(label, collapsibleState);
         this.tooltip = this.label;
@@ -159,7 +160,7 @@ export class PackageHierarchyProvider implements vscode.TreeDataProvider<Package
                     element.packageUri!,
                     'package',
                     element.label,
-                    "SOURCE_LIBRARY"
+                    "SOURCE_LIBRARY",""
                 );
 
 
@@ -175,7 +176,8 @@ export class PackageHierarchyProvider implements vscode.TreeDataProvider<Package
                             element.packageUri!,
                             'PACKAGE',
                             actualPackageName,
-                            "SOURCE_LIBRARY"
+                            "SOURCE_LIBRARY",
+                            element.parent?.label || ""
                         );
                         
                         processedFolders.push(...subFolders.map(subfolder => 
@@ -187,7 +189,8 @@ export class PackageHierarchyProvider implements vscode.TreeDataProvider<Package
                                 subfolder.counter,
                                 subfolder.facet,
                                 subfolder.whatisclicked,
-                                subfolder.hasChildrenOfSameFacet
+                                subfolder.hasChildrenOfSameFacet,
+                                element
                             )
                         ));
                     } else {
@@ -200,7 +203,8 @@ export class PackageHierarchyProvider implements vscode.TreeDataProvider<Package
                                 folder.counter,
                                 folder.facet,
                                 folder.whatisclicked,
-                                folder.hasChildrenOfSameFacet
+                                folder.hasChildrenOfSameFacet,
+                                element
                             )
                         );
                     }
@@ -209,13 +213,18 @@ export class PackageHierarchyProvider implements vscode.TreeDataProvider<Package
             } else {
                 // Handle other virtual folders
 
-               
+                if (element.facet === "TYPE") {
+                    // Get the parent's name when facet is TYPE
+                    const parentName = element.parent?.label || "";
+                    console.log("Parent name for TYPE:", parentName);
+                }
 
                 const virtualFolders = await this.adtService.getVirtualFolderContents(
                     element.packageUri!,
                     element.facet!,
                     element.label,
-                    element.label
+                    element.label,
+                    element.parent?.label || ""
                 );
 
                 return virtualFolders.map(folder => 
@@ -227,7 +236,8 @@ export class PackageHierarchyProvider implements vscode.TreeDataProvider<Package
                         folder.counter,
                         folder.facet,
                         folder.whatisclicked,
-                        folder.hasChildrenOfSameFacet
+                        folder.hasChildrenOfSameFacet,
+                        element
                     )
                 );
             }

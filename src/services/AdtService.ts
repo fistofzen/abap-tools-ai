@@ -388,7 +388,9 @@ ENDCLASS.`;
         packageName: string,
         facetValue: string,
         name: string,
-        groupName: string
+        groupName: string,
+        parentName: string
+
     ): Promise<VirtualFolder[]> {
         // Extract package name from URI by removing any path segments
         const packageNameParts = packageName.split("/");
@@ -440,7 +442,7 @@ ENDCLASS.`;
                     <vfs:value>..${actualPackageName}</vfs:value>
                     </vfs:preselection>
                     <vfs:preselection facet="type">
-                    <vfs:value>${"CLAS"}</vfs:value>
+                    <vfs:value>${parentName}</vfs:value>
                     </vfs:preselection>
                     <vfs:facetorder></vfs:facetorder>
                     </vfs:virtualFoldersRequest>
