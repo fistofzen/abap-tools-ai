@@ -625,4 +625,17 @@ ENDCLASS.`;
             throw error;
         }
     }
+
+    async getObjectSource(uri: string): Promise<string> {
+        try {
+            const response = await this.request(uri, "GET", undefined, {
+                Accept: "text/plain",
+                "Content-Type": "text/plain",
+            });
+            return response;
+        } catch (error) {
+            console.error("Failed to get object source:", error);
+            throw error;
+        }
+    }
 }

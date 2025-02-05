@@ -12,7 +12,8 @@ export class PackageItem extends vscode.TreeItem {
         public readonly facet?: string,
         public readonly whatisclicked?: string,
         public readonly hasChildrenOfSameFacet?: string,
-        public readonly parent?: PackageItem
+        public readonly parent?: PackageItem,
+        public readonly vituri?: string
     ) {
         super(label, collapsibleState);
         this.tooltip = this.label;
@@ -114,6 +115,34 @@ export class PackageHierarchyProvider implements vscode.TreeDataProvider<Package
                 }
             }
         });
+
+        // Add handler for TYPE items
+        vscode.commands.registerCommand('abap-tools.openType', async (item: PackageItem) => {
+            if (item.type === 'virtualFolder' && item.facet === 'TYPE') {
+                try {
+                    let source: string;
+                    if (item.vituri?.toLowerCase().includes('ddl')) {
+                        // Handle DDL source using the vituri path but with the correct endpoint
+                        const ddlName = item.label;
+                        source = await this.adtService.getObjectSource(`/ddic/ddl/sources/${ddlName}/source/main`);
+                    
+                    } else {
+                        // Handle other types
+                        source = await this.adtService.getObjectSource(item.vituri!);
+                    }
+                    
+                    // Create and show document
+                    const document = await vscode.workspace.openTextDocument({
+                        content: source,
+                        language: 'abap'
+                    });
+                    await vscode.window.showTextDocument(document);
+                    await vscode.commands.executeCommand('editor.action.formatDocument');
+                } catch (error) {
+                    vscode.window.showErrorMessage(`Failed to open source: ${error}`);
+                }
+            }
+        });
     }
 
     refresh(): void {
@@ -122,12 +151,20 @@ export class PackageHierarchyProvider implements vscode.TreeDataProvider<Package
 
     getTreeItem(element: PackageItem): vscode.TreeItem {
         const treeItem = element;
-        if (element.type === 'virtualFolder' && (element.facet === 'REPO' || element.facet === 'CLAS')) {
-            treeItem.command = {
-                command: 'abap-tools.openSource',
-                title: 'Open Source',
-                arguments: [element]
-            };
+        if (element.type === 'virtualFolder') {
+            if (element.facet === 'REPO' || element.facet === 'CLAS') {
+                treeItem.command = {
+                    command: 'abap-tools.openSource',
+                    title: 'Open Source',
+                    arguments: [element]
+                };
+            } else if (element.facet === 'TYPE') {
+                treeItem.command = {
+                    command: 'abap-tools.openType',
+                    title: 'Open Type',
+                    arguments: [element]
+                };
+            }
         }
         return treeItem;
     }
@@ -204,7 +241,8 @@ export class PackageHierarchyProvider implements vscode.TreeDataProvider<Package
                                 folder.facet,
                                 folder.whatisclicked,
                                 folder.hasChildrenOfSameFacet,
-                                element
+                                element,
+                                folder.vituri
                             )
                         );
                     }
@@ -237,7 +275,8 @@ export class PackageHierarchyProvider implements vscode.TreeDataProvider<Package
                         folder.facet,
                         folder.whatisclicked,
                         folder.hasChildrenOfSameFacet,
-                        element
+                        element,
+                        folder.vituri
                     )
                 );
             }
