@@ -50,6 +50,30 @@ export class PackageItem extends vscode.TreeItem {
                     case 'DOMA':
                         this.iconPath = new vscode.ThemeIcon('symbol-ruler');
                         break;
+                    case 'DDLS':
+                        this.iconPath = new vscode.ThemeIcon('symbol-structure');
+                        break;
+                    case 'VIEW':
+                        this.iconPath = new vscode.ThemeIcon('preview');
+                        break;
+                    case 'TYPE':
+                        this.iconPath = new vscode.ThemeIcon('symbol-variable');
+                        break;
+                    case 'GROUP':
+                        this.iconPath = new vscode.ThemeIcon('symbol-namespace');
+                        break;
+                    case 'PACKAGE':
+                        this.iconPath = new vscode.ThemeIcon('folder-library');
+                        break;
+                    case 'MSAG':
+                        this.iconPath = new vscode.ThemeIcon('comment-discussion');
+                        break;
+                    case 'TRAN':
+                        this.iconPath = new vscode.ThemeIcon('terminal');
+                        break;
+                    case 'DEVC':
+                        this.iconPath = new vscode.ThemeIcon('folder');
+                        break;
                     default:
                         this.iconPath = new vscode.ThemeIcon('folder');
                 }
@@ -126,7 +150,11 @@ export class PackageHierarchyProvider implements vscode.TreeDataProvider<Package
                         const ddlName = item.label;
                         source = await this.adtService.getObjectSource(`/ddic/ddl/sources/${ddlName}/source/main`);
                     
-                    } else {
+                    }else if (item.vituri?.toLowerCase().includes('clas')) {
+                        source = await this.adtService.getClassSource(item.label);
+
+                        
+                    }else {
                         // Handle other types
                         source = await this.adtService.getObjectSource(item.vituri!);
                     }

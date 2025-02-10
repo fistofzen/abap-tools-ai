@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { AdtService } from './services/AdtService';
 import { PackageHierarchyProvider } from './providers/PackageHierarchyProvider';
+import { SidePanel } from './panels/SidePanel';
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('ABAP Tools extension is now active');
@@ -11,16 +12,25 @@ export function activate(context: vscode.ExtensionContext) {
     
     let adtService: AdtService;
     try {
-        adtService = new AdtService();
-    } catch (error) {
-        // For testing purposes, create a dummy service if config is missing
-        if (process.env.NODE_ENV === 'test') {
-            console.log('Creating mock ADT service for testing');
-            adtService = new AdtService(true); // Add a boolean parameter to indicate test mode
+        if (!host) {
+            // Show configuration prompt instead of throwing error
+            vscode.window.showWarningMessage(
+                'SAP host not configured. Would you like to configure it now?',
+                'Configure',
+                'Later'
+            ).then(selection => {
+                if (selection === 'Configure') {
+                    vscode.commands.executeCommand('workbench.action.openSettings', 'abap-tools');
+                }
+            });
+            // Create service with default values for now
+            adtService = new AdtService(true);
         } else {
-            console.error('Failed to create ADT service:', error);
-            throw error;
+            adtService = new AdtService();
         }
+    } catch (error) {
+        console.error('Failed to create ADT service:', error);
+        adtService = new AdtService(true); // Create with test mode
     }
 
     // Add status bar item
@@ -29,6 +39,13 @@ export function activate(context: vscode.ExtensionContext) {
     statusBarItem.tooltip = "SAP Connection (Right-click for options)";
     statusBarItem.command = 'abap-tools.connectSAP';
     statusBarItem.show();
+
+    // Add this near the other status bar item setup
+    const sidePanelButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
+    sidePanelButton.text = "$(tools) ABAP Tools";
+    sidePanelButton.tooltip = "Open ABAP Tools Panel";
+    sidePanelButton.command = 'abap-tools.openSidePanel';
+    sidePanelButton.show();
 
     // Register status bar menu
     vscode.commands.registerCommand('abap-tools.statusBarMenu', async () => {
@@ -169,6 +186,12 @@ export function activate(context: vscode.ExtensionContext) {
                 statusBarItem.text = "$(plug) SAP";
                 vscode.window.showInformationMessage('Disconnected from SAP system');
             }
+        },
+        {
+            command: 'abap-tools.openSidePanel',
+            callback: () => {
+                SidePanel.createOrShow();
+            }
         }
     ];
 
@@ -232,6 +255,7 @@ export function activate(context: vscode.ExtensionContext) {
         ...disposables,
         ...providers,
         statusBarItem,
+        sidePanelButton,
         vscode.commands.registerCommand('abap-tools.refreshPackages', () => 
             packageHierarchyProvider.refresh()
         )

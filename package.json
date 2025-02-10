@@ -25,6 +25,8 @@
             ]
         },
         "views": {
+
+            
             "sap-explorer": [
                 {
                     "id": "sapPackages",
@@ -76,6 +78,11 @@
             {
                 "command": "abap-tools.openSource",
                 "title": "Open ABAP Source"
+            },
+            {
+                "command": "abap-tools.openSidePanel",
+                "title": "Open ABAP Tools Panel",
+                "category": "ABAP Tools"
             }
         ],
         "languages": [
@@ -136,6 +143,11 @@
                     "command": "abap-tools.refreshPackages",
                     "when": "view == sapPackages",
                     "group": "navigation"
+                },
+                {
+                    "command": "abap-tools.openSidePanel",
+                    "when": "view == sapPackages",
+                    "group": "navigation"
                 }
             ],
             "view/item/context": [
@@ -145,7 +157,14 @@
                     "group": "1_modification"
                 }
             ]
-        }
+        },
+        "keybindings": [
+            {
+                "command": "abap-tools.openSidePanel",
+                "key": "ctrl+shift+a",
+                "mac": "cmd+shift+a"
+            }
+        ]
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",

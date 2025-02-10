@@ -57,10 +57,10 @@ export class AdtService {
     constructor(isTestMode: boolean = false) {
         const config = vscode.workspace.getConfiguration('abap-tools');
         if (isTestMode) {
-            this.baseUrl = 'http://test.sap.server:44300/sap/bc/adt';
+            this.baseUrl = 'https://gclp0285.devint.net.sap:8443/sap/bc/adt';
             return;
         }
-        const protocol = config.get<string>('defaultPort') === '44300' ? 'https' : 'http';
+        const protocol = config.get<string>('defaultPort') === '8443' ? 'https' : 'https';
         const host = config.get<string>('defaultHost');
         const port = config.get<string>('defaultPort');
         

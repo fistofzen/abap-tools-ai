@@ -12,7 +12,7 @@ suite('ADT Service Test Suite', () => {
 
     test('Connection configuration test', () => {
         const connectionInfo = adtService.getConnectionInfo();
-        assert.strictEqual(connectionInfo.url, 'http://test.sap.server:44300/sap/bc/adt');
+        assert.strictEqual(connectionInfo.url, 'https://gclp0285.devint.net.sap:8443/sap/bc/adt');
         assert.strictEqual(connectionInfo.isConnected, false);
     });
 
